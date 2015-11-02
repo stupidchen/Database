@@ -13,8 +13,7 @@ int opFunFloat(void *x, void *y){
 	double right = *((double*)y);
 
 	if (left > right) return 1;
-	return 0;
-}
+	return 0;}
 
 int opFunVarchar(void *x, void *y){
 	char *left = *((char**)x);
@@ -50,6 +49,23 @@ int initIndex(int tableID, int columnID, int keyType){	 //1:exist -1:failure 0:s
 	}
 
 	return 0;
+}
+
+resultType searchIndex(indexType *thisIndex, nodeType *thisNode, void *key){
+	void *thisKey, *thisSon;
+	int i;
+	for (i = 0; i < thisNode->ptrNum; i++){
+		thisKey = (thisNode->key)[i];
+		if (!((*(thisIndex->opFun))(key, thisKey))){
+			thisSon = (thisNode->data)[i];
+			if (thisNode->ifLeaf == 0) return searchIndex(thisIndex, (nodeType*)thisSon, key);
+			else return *((resultType*)(thisSon));
+		}
+	}
+	
+	resultType naR;
+	naR.position = -1;
+	return naR;
 }
 
 int main(){
