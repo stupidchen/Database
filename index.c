@@ -23,18 +23,38 @@ int opFunVarchar(void *x, void *y){
 	return 0;
 }
 
-int initIndex(int tableID, int columnID, int keyType){	 //1:exist -1:failure 0:success
-	indexType *thisIndex;
+int initSystem(systemType *thisSystem, int maxBufferedIndex){
+	thisSystem->maxBufferedIndex = maxBufferedIndex;
+	thisSystem->indexArray = (indexType**)malloc(sizeof(indexType*) * maxBufferedIndex);
+	thisSystem->exception = 0;
+	if (thisSystem->indexArray == NULL){
+		thisSystem->exception = -1;
+		return -1;
+	}
+	return 0;
+}
+
+int makeIndexID(int tableID, int columnID){
 	int indexID = tableID * columnID;
-	int bufferID = indexID % maxBufferedIndex;
-	if (glbIndexArray[bufferID] -> indexID == indexID) return 1;
+	return indexID;
+}
 
-	glbIndexArray[bufferID] = (indexType*)malloc(sizeof(indexType));	
-	thisIndex = glbIndexArray[bufferID];
+int initGlobalIndex(systemType *thisSystem, int tableID, int columnID, int keyType){
+	int indexID = makeIndexID(tableID, columnID);
+	int bufferID = indexID % (thisSystem->maxBufferedIndex);
+	indexType **indexArray = thisSystem->indexArray;
+	if (indexArray == NULL || indexArray[bufferID]->indexID != indexID){
+		indexArray[bufferID] = (indexType*)malloc(sizeof(indexType));	
+		if (indexArray[bufferID] == NULL) return -1;
+		return initIndex(indexArray[bufferID], tableID, columnID, keyType);
+	}
+	return 0;
+}
 
+int initIndex(indexType *thisIndex, int tableID, int columnID, int keyType){	 //1:exist -1:failure 0:success
 	thisIndex -> tableID = tableID;
 	thisIndex -> columnID = columnID;
-	thisIndex -> indexID = indexID;
+	thisIndex -> indexID = makeIndexID(tableID, columnID);
 
 	thisIndex -> firstLeaf = NULL;
 	thisIndex -> root = NULL;
@@ -51,6 +71,23 @@ int initIndex(int tableID, int columnID, int keyType){	 //1:exist -1:failure 0:s
 	return 0;
 }
 
+resultType makeNar(void){
+	resultType naR;
+	naR.position = -1;
+	return naR;
+}
+
+resultType searchGlobalIndex(systemType *thisSystem, int tableID, int columnID, void *key){
+	int indexID = makeIndexID(tableID, columnID);
+	int bufferID = indexID % (thisSystem->maxBufferedIndex);
+	indexType **indexArray = thisSystem->indexArray;
+	if (indexArray == NULL || indexArray[bufferID]->indexID != indexID){
+		indexArray[bufferID] = getIndexFromMemory(tableID, columnID);	
+		if (indexArray[bufferID] == NULL) return makeNar();
+	}
+	return searchIndex(indexArray[bufferID], indexArray[bufferID]->root, key);
+}
+
 resultType searchIndex(indexType *thisIndex, nodeType *thisNode, void *key){
 	void *thisKey, *thisSon;
 	int i;
@@ -62,10 +99,11 @@ resultType searchIndex(indexType *thisIndex, nodeType *thisNode, void *key){
 			else return *((resultType*)(thisSon));
 		}
 	}
-	
-	resultType naR;
-	naR.position = -1;
-	return naR;
+	return makeNar();
+}
+
+indexType *getIndexFromMemory(int tableID, int columnID){
+	return NULL;
 }
 
 int main(){

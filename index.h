@@ -3,8 +3,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 
-#define maxTypeNumber 5
-#define maxBufferedIndex 100
+#define defaultMaxBufferedIndex 100
 
 /*
    struct result stores the index result, as well as which the datafield of the leaf node of the B+tree points to. 
@@ -43,8 +42,11 @@ typedef struct index{
 	int keyType;		
 }indexType;
 
-indexType **glbIndexArray; //the global pointer array of buffered Index
-
+typedef struct indexSystem{
+	indexType **indexArray; //the global pointer array of buffered Index
+	int exception;
+	int maxBufferedIndex;
+}systemType;
 //three compare operator of each types, if leftside's value bigger than rightside's, then return 1
 int opFunInt(void *x, void *y);
 
@@ -52,11 +54,25 @@ int opFunFloat(void *x, void *y);
 
 int opFunVarchar(void *x, void *y);
 
+int makeIndexID(int tableID, int columnID);
+
+int initSystem(systemType *thisSystem, int maxBufferedIndex);
 /*Initialize the index and put it into the buffer
 return value:1 for exist; -1 for failure; 0 for success
 */
-int initIndex(int tableID, int columnID, int keyType);	 
+int initGlobalIndex(systemType *thisSystem, int tableID, int columnID, int keyType);
+
+int initIndex(indexType *thisIndex, int tableID, int columnID, int keyType);	 
+
+/*
+   Make a resultType which means the result doesn't exist.
+   Nar = Not a result
+ */
+resultType makeNar(void);
+
+resultType searchGlobalIndex(systemType *thisSystem, int tableID, int columnID, void *key);
 
 resultType searchIndex(indexType *thisIndex, nodeType *thisNode, void *key);
 
+indexType *getIndexFromMemory(int tableID, int columnID);
 #endif
