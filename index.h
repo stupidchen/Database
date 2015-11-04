@@ -58,8 +58,7 @@ typedef struct indexSystem{
 	int maxBufferedIndex;
 }systemType;
 
-char *getExceptionName(int code){
-}
+char *getExceptionName(int code);
 
 //three compare operator of each types, if leftside's value bigger than rightside's, then return 1
 int opFunInt(void *x, void *y);
@@ -82,7 +81,7 @@ int initIndex(indexType *thisIndex, int tableID, int columnID, int keyType);
    Make a resultType which means the result doesn't exist.
    Nar = Not a result
  */
-resultType makeNar(void);
+resultType makeNar(int code);
 
 resultType searchGlobalIndex(systemType *thisSystem, int tableID, int columnID, void *key);
 
@@ -92,37 +91,9 @@ resultType searchIndex(indexType *thisIndex, nodeType *thisNode, void *key);
    Major operation of the index B+tree:insert and delete
    Still building...
  */
-int insertGlobalIndex(systemType *thisSystem, int tableID, int columnID, void *key, int keyType){
-	int indexID = makeIndexID(tableID, columnID);
-	int bufferID = indexID % (thisSystem->maxBufferedIndex);
-	indexType **indexArray = thisSystem->indexArray;
-	if (indexArray == NULL || indexArray[bufferID]->indexID != indexID){	
-		indexArray[bufferID] = getIndexFromDisk(tableID, columnID);
-		if (indexArray[bufferID] == NULL) return Error_CannotGetIndexFromDisk;
-	}
-	if (thisSystem->keyType != keyType) return Error_InvalidKeyType;
-	return insertIndex(indexArray[bufferID], indexArray[bufferID]->root, key);
-}
+int insertGlobalIndex(systemType *thisSystem, int tableID, int columnID, void *key, int keyType);
 
-int insertIndex(indexType *thisIndex, nodeType *thisNode, void *key){
-	int i, exception;
-	void *thisSon;
-
-	if (thisNode->ifLeaf == 0){
-		for (i = 0;i < thisNode->ptrNum; i++){
-			thisSon = (thisNode->data)[i];
-			if ((*(thisIndex->opFun))(thisKey,key)){
-				exception = insertIndex(thisIndex, thisSon, key);
-				if (exception != 0) return exception;
-				else break;
-			}
-		}
-
-	}
-	else{
-		if ()
-	}
-}
+int insertIndex(indexType *thisIndex, nodeType *thisNode, void *key);
 
 
 /*
@@ -131,7 +102,7 @@ int insertIndex(indexType *thisIndex, nodeType *thisNode, void *key){
    saveBufferdIndexToDisk is the procedure that save the buffered index to the disk.
    Still building...
    */
-indexType *getIndexFromDisk(int tableID, int columnID);
+indexType *getIndexFromDisk(systemType *thisSystem, int tableID, int columnID);
 
-int saveBufferedIndexToDisk(int tableID, int columnID);
+int saveBufferedIndexToDisk(systemType *thisSystem, int tableID, int columnID);
 #endif

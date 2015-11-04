@@ -73,7 +73,7 @@ char *getExceptionName(int code){
 
 resultType makeNar(int code){
 	resultType naR;
-	naR.fileName = NULL;
+	naR.filename = NULL;
 	naR.position = code;
 	return naR;
 }
@@ -83,7 +83,7 @@ resultType searchGlobalIndex(systemType *thisSystem, int tableID, int columnID, 
 	int bufferID = indexID % (thisSystem->maxBufferedIndex);
 	indexType **indexArray = thisSystem->indexArray;
 	if (indexArray == NULL || indexArray[bufferID]->indexID != indexID){	
-		indexArray[bufferID] = getIndexFromDisk(tableID, columnID);	
+		indexArray[bufferID] = getIndexFromDisk(thisSystem, tableID, columnID);	
 		if (indexArray[bufferID] == NULL) return makeNar(Error_CannotGetIndexFromDisk);
 	}
 	return searchIndex(indexArray[bufferID], indexArray[bufferID]->root, key);
@@ -103,11 +103,52 @@ resultType searchIndex(indexType *thisIndex, nodeType *thisNode, void *key){
 	return makeNar(Error_TupleIsnotExist);
 }
 
-indexType *getIndexFromDisk(int tableID, int columnID){
+int insertGlobalIndex(systemType *thisSystem, int tableID, int columnID, void *key, int keyType){
+	int indexID = makeIndexID(tableID, columnID);
+	int bufferID = indexID % (thisSystem->maxBufferedIndex);
+	int result;
+	indexType **indexArray = thisSystem->indexArray;
+	if (indexArray == NULL || indexArray[bufferID]->indexID != indexID){	
+		result = saveBufferedIndexToDisk(thisSystem, indexArray[bufferID]->tableID, indexArray[bufferID]->columnID);
+		if (result != 0) return result;
+		indexArray[bufferID] = getIndexFromDisk(thisSystem, tableID, columnID);
+		if (indexArray[bufferID] == NULL) return Error_CannotGetIndexFromDisk;
+	}
+	if (indexArray[bufferID]->keyType != keyType) return Error_InvalidKeyType;
+	return insertIndex(indexArray[bufferID], indexArray[bufferID]->root, key);
+}
+
+int insertIndex(indexType *thisIndex, nodeType *thisNode, void *key){
+	int i, exception;
+	void *thisKey, *thisSon;
+
+	if (thisNode->ifLeaf == 0){
+		for (i = 0;i < thisNode->ptrNum; i++){
+			thisSon = (thisNode->data)[i];
+			thisKey = (thisNode->key)[i];
+			if ((*(thisIndex->opFun))(thisKey,key)){
+				exception = insertIndex(thisIndex, thisSon, key);
+				if (exception != 0) return exception;
+				else break;
+			}
+		}
+		/*
+		   Adjustment after insertion to a internal node
+		 */
+	}
+	else{
+		/*
+		   Insertion of the leaf node
+		   
+		 */
+	}
+}
+
+indexType *getIndexFromDisk(systemType *thisSystem, int tableID, int columnID){
 	return NULL;
 }
 
-int saveBufferedIndexToDisk(int tableID, int columnID){
+int saveBufferedIndexToDisk(systemType *thisSystem, int tableID, int columnID){
 	int indexID = makeIndexID(tableID, columnID);
 	int bufferID = indexID % (thisSystem->maxBufferedIndex);
 	indexType **indexArray = thisSystem->indexArray;
