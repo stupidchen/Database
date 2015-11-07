@@ -20,7 +20,6 @@ typedef struct result{
 	char *filename;
 	int position;
 }resultType;
-
 /*
    struct node is the node of the B+tree index.
    int ifLeaf is a sign that distinguish a node whether it is leaf:0 -> internal node; 1 -> leaf node.
@@ -39,8 +38,8 @@ typedef struct node{
 /*
    struct index stores the information of a B+tree index.
    The type of key value:0 for int; 1 for float; 2 for varchar.
-   Key number limit: level
-   Pointer number limit: level+1
+   Key number limit: level-1
+   Pointer number limit: level
    But the last pointer points to its sibling.
  */
 
@@ -69,6 +68,8 @@ int opFunVarchar(void *x, void *y);
 
 int makeIndexID(int tableID, int columnID);
 
+int initNode(nodeType *newNode);
+
 int initSystem(systemType *thisSystem, int maxBufferedIndex);
 /*Initialize the index and put it into the buffer
 return value:1 for exist; -1 for failure; 0 for success
@@ -91,9 +92,9 @@ resultType searchIndex(indexType *thisIndex, nodeType *thisNode, void *key);
    Major operation of the index B+tree:insert and delete
    Still building...
  */
-int insertGlobalIndex(systemType *thisSystem, int tableID, int columnID, void *key, int keyType);
+int insertGlobalIndex(systemType *thisSystem, int tableID, int columnID, void *key, int keyType, void *data);
 
-int insertIndex(indexType *thisIndex, nodeType *thisNode, void *key);
+int insertIndex(indexType *thisIndex, nodeType *thisNode, void *key, void *data);
 
 
 /*
