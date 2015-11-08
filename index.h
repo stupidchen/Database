@@ -11,6 +11,7 @@
 #define Error_CannotAllocateEnoughSpace -3
 #define Error_InvalidKeyType -4
 #define Error_InvalidBufferedIndexCode -5
+#define noError 0
 
 /*
    struct result stores the index result, as well as which the datafield of the leaf node of the B+tree points to. 
@@ -28,7 +29,7 @@ typedef struct result{
    int ptrNum is the number of the pointers of key/data. 
  */
 typedef struct node{ 
-	struct node *parent, *root, *sibling;
+	struct node *parent, *sibling, *pSibling;
 	int ifLeaf;
 	void **key;
 	void **data;
@@ -90,12 +91,18 @@ resultType searchIndex(indexType *thisIndex, nodeType *thisNode, void *key);
 
 /*
    Major operation of the index B+tree:insert and delete
-   Still building...
+   Insertion finished.
+   But deletion is still building. Too complexible...
  */
-int insertGlobalIndex(systemType *thisSystem, int tableID, int columnID, void *key, int keyType, void *data);
+int insertGlobalIndex(systemType *thisSystem, int tableID, int columnID, void *key, void *data);
 
 int insertIndex(indexType *thisIndex, nodeType *thisNode, void *key, void *data);
 
+int compareResultData(resultType *left, resultType *right);
+
+int deleteGlobalIndex(systemType *thisSystem, int tableID, int columnID, void *key, resultType *data);
+
+int deleteIndex(indexType *thisIndex, nodeType *thisNode, void *key, resultType *data);
 
 /*
    IO operation.
@@ -103,7 +110,9 @@ int insertIndex(indexType *thisIndex, nodeType *thisNode, void *key, void *data)
    saveBufferdIndexToDisk is the procedure that save the buffered index to the disk.
    Still building...
    */
-indexType *getIndexFromDisk(systemType *thisSystem, int tableID, int columnID);
+int replaceBufferedIndex(indexType **buffer, int tableID, int columnID, int indexID, int bufferID);
 
-int saveBufferedIndexToDisk(systemType *thisSystem, int tableID, int columnID);
+indexType *getIndexFromDisk(int tableID, int columnID);
+
+int saveBufferedIndexToDisk(indexType *thisIndex, int tableID, int columnID);
 #endif
