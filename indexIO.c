@@ -39,6 +39,12 @@ void freeSystem(systemType *thisSystem){
 	free(thisSystem);
 }
 
+void deleteIndexFile(int tableID, int columnID){
+	char filename[maxFilenameLength];
+	sprintf(filename, "%s%d%d", indexFilename, tableID, columnID);
+	remove(filename);
+}
+
 int replaceBufferedIndex(indexType **buffer, int tableID, int columnID, int indexID, int bufferID){
 	int result;
 	if (buffer[bufferID]->indexID == indexID) return noError;
@@ -97,7 +103,11 @@ indexType *getIndexFromDisk(int tableID, int columnID){
 	
 	fread(newIndexForIO, sizeof(indexTypeForIO), 1, readFile);
 	newIndex->firstLeaf = NULL;
+	if (newIndex->keySize < 2) newIndex->keySize = 4;
+	else newIndex->keySize = newIndex->keyType/2;
+
 	int keyType = newIndex->keyType;
+	int keySize = newIndex->keySize;
 	switch (keyType){
 		case 0:newIndex->opFun = &opFunInt;break;
 		case 1:newIndex->opFun = &opFunFloat;break;
@@ -105,7 +115,6 @@ indexType *getIndexFromDisk(int tableID, int columnID){
 	}
 
 	int i, ptrNum, leafNum = 0;
-	int keySize = 0;
 	nodeType *newNode, *lastNode = NULL;
 
 	while (fread(&ptrNum, sizeof(ptrNum), 1, readFile) != 0){
@@ -118,7 +127,6 @@ indexType *getIndexFromDisk(int tableID, int columnID){
 		lastNode = newNode;
 
 		for (i = 0; i < newNode->ptrNum; i++){
-			fread(&keySize, sizeof(keySize), 1, readFile);
 			newNode->key[i] = (void*)malloc(keySize);
 			fread(newNode->key[i], keySize, 1, readFile);
 		}
@@ -127,6 +135,8 @@ indexType *getIndexFromDisk(int tableID, int columnID){
 			fread(newNode->data[i], sizeof(resultType), 1, readFile);
 		}
 	}
+	fclose(readFile);
+
 	reconstructIndex(newIndex, newIndex->firstLeaf, leafNum);
 	return newIndex;
 }
@@ -144,26 +154,18 @@ int saveBufferedIndexToDisk(indexType *thisIndex){
 	fwrite(indexForIO, sizeof(indexTypeForIO*), 1, saveFile);
 
 	int i;
-	int keySize = 0;
+	int keySize = thisIndex->keySize;
 	int keyType = thisIndex->keyType;
-	if (keyType == 0) keySize = sizeof(int);
-	if (keyType == 1) keySize = sizeof(float);
 	
 	nodeType *thisLeaf = thisIndex->firstLeaf;
 	while (thisLeaf != NULL){
 		fwrite(&thisLeaf->ptrNum, sizeof(thisLeaf->ptrNum), 1, saveFile);
-		for (i = 0; i < thisLeaf->ptrNum; i++){
-			if (keyType == 2){
-				char **thisKey = (char**)thisLeaf->key[i];
-				keySize = sizeof(*thisKey);
-			}
-			fwrite(&keySize, sizeof(keySize), 1, saveFile);
-			fwrite(thisLeaf->key[i], keySize, 1, saveFile);
-		}
+		for (i = 0; i < thisLeaf->ptrNum; i++) fwrite(thisLeaf->key[i], keySize, 1, saveFile);
 		for (i = 0; i < thisLeaf->ptrNum; i++) 
 			fwrite(thisLeaf->data[i], sizeof(resultType), 1, saveFile);
 		thisLeaf = thisLeaf->sibling;
 	}
+	fclose(saveFile);
 	
 	freeIndex(thisIndex);
 

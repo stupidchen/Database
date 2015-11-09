@@ -1,8 +1,6 @@
 #ifndef _INDEX_IO_H
 #define _INDEX_IO_H
 
-#include<stdio.h>
-
 #include "index.h"
 
 #define indexFilename "index"
@@ -28,7 +26,11 @@ void freeIndexNode(nodeType *thisNode, int keyType);
 
 void freeIndex(indexType *thisIndex);
 
+void freeSpecificIndex(systemType *thisSystem, int tableID, int columnID);
+
 void freeSystem(systemType *thisSystem);
+
+void deleteIndexFile(int tableID, int columnID);
 
 int replaceBufferedIndex(indexType **buffer, int tableID, int columnID, int indexID, int bufferID);
 

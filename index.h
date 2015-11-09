@@ -7,6 +7,7 @@
 #define defaultMaxBufferedIndex 100
 #define dbFilenameLength 20
 #define defaultIndexLevel 5
+#define indexHashSeed 1331
 
 #define Error_CannotGetIndexFromDisk -1
 #define Error_TupleIsnotExist -2
@@ -50,7 +51,7 @@ typedef struct node{
 typedef struct index{ 
 	int tableID, columnID, indexID;
 	int level;
-	int keyType;		
+	int keyType, keySize;
 	nodeType *root, *firstLeaf;	
 	int (*opFun)(void *x, void *y);
 }indexType;
@@ -73,6 +74,9 @@ int makeIndexID(int tableID, int columnID);
 int initNode(nodeType *newNode);
 
 int initSystem(systemType *thisSystem, int maxBufferedIndex);
+
+void dropIndex(systemType *thisSystem, int tableID, int columnID);
+
 /*Initialize the index and put it into the buffer
 return value:1 for exist; -1 for failure; 0 for success
 */
