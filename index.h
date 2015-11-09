@@ -2,9 +2,11 @@
 #define _INDEX_H
 #include<stdio.h>
 #include<stdlib.h>
+#include<string.h>
 
 #define defaultMaxBufferedIndex 100
 #define dbFilenameLength 20
+#define defaultIndexLevel 5
 
 #define Error_CannotGetIndexFromDisk -1
 #define Error_TupleIsnotExist -2
@@ -82,6 +84,7 @@ int initIndex(indexType *thisIndex, int tableID, int columnID, int keyType);
    Make a resultType which means the result doesn't exist.
    Nar = Not a result
  */
+
 resultType makeNar(int code);
 
 resultType searchGlobalIndex(systemType *thisSystem, int tableID, int columnID, void *key);
@@ -93,9 +96,11 @@ resultType searchIndex(indexType *thisIndex, nodeType *thisNode, void *key);
    Insertion finished.
    But deletion is still building. Too complexible...
  */
-int insertGlobalIndex(systemType *thisSystem, int tableID, int columnID, void *key, void *data);
+resultType *makeResult(char *filename, int position);
 
-int insertIndex(indexType *thisIndex, nodeType *thisNode, void *key, void *data);
+int insertGlobalIndex(systemType *thisSystem, int tableID, int columnID, void *key, resultType *data);
+
+int insertIndex(indexType *thisIndex, nodeType *thisNode, void *key, resultType *data);
 
 int compareResultData(resultType *left, resultType *right);
 

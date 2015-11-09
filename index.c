@@ -3,7 +3,7 @@
 
 
 int initSystem(systemType *thisSystem, int maxBufferedIndex){
-	thisSystem->maxBufferedIndex = maxBufferedIndex;
+	thisSystem->maxBufferedIndex = defaultMaxBufferedIndex;
 	thisSystem->indexArray = (indexType**)malloc(sizeof(indexType*) * maxBufferedIndex);
 	thisSystem->exception = 0;
 	if (thisSystem->indexArray == NULL) return Error_CannotAllocateEnoughSpace;
@@ -27,6 +27,7 @@ int initGlobalIndex(systemType *thisSystem, int tableID, int columnID, int keyTy
 	int bufferID = indexID % (thisSystem->maxBufferedIndex);
 	indexType **indexArray = thisSystem->indexArray;
 	if (indexArray[bufferID] == NULL || indexArray[bufferID]->indexID != indexID){
+		if (indexArray[bufferID] != NULL) saveBufferedIndexToDisk(indexArray[bufferID]);
 		indexArray[bufferID] = (indexType*)malloc(sizeof(indexType));	
 		if (indexArray[bufferID] == NULL) return Error_CannotAllocateEnoughSpace;
 		return initIndex(indexArray[bufferID], tableID, columnID, keyType);
@@ -41,7 +42,7 @@ int initIndex(indexType *thisIndex, int tableID, int columnID, int keyType){	 //
 
 	thisIndex->firstLeaf = NULL;
 	thisIndex->root = NULL;
-	thisIndex->level = 2;	
+	thisIndex->level = defaultIndexLevel;	
 
 	thisIndex->keyType = keyType;
 	switch (keyType){
@@ -99,14 +100,18 @@ resultType searchGlobalIndex(systemType *thisSystem, int tableID, int columnID, 
 
 resultType searchIndex(indexType *thisIndex, nodeType *thisNode, void *key){
 	void *thisKey, *thisSon;
-	int i, op;
+	int i, op, ifFound = 0;
 
 	if (thisNode->ifLeaf == 0){
-		for (i = 0; i < thisNode->ptrNum; i++){
+		for (i = 0; i < thisNode->ptrNum - 1; i++){
 			thisKey = (thisNode->key)[i];
 			op = (*(thisIndex->opFun))(thisKey, key);
-			if (op == 1) break;
+			if (op == 1){
+				ifFound = 1;
+				break;
+			}
 		}
+		if (ifFound) i++;
 		thisSon = (thisNode->data)[i];
 		return searchIndex(thisIndex, (nodeType*)thisSon, key);
 	}
@@ -122,7 +127,7 @@ resultType searchIndex(indexType *thisIndex, nodeType *thisNode, void *key){
 	return makeNar(Error_TupleIsnotExist);
 }
 
-int insertGlobalIndex(systemType *thisSystem, int tableID, int columnID, void *key, void *data){
+int insertGlobalIndex(systemType *thisSystem, int tableID, int columnID, void *key, resultType *data){
 	int indexID = makeIndexID(tableID, columnID);
 	int bufferID = indexID % (thisSystem->maxBufferedIndex);
 	indexType **indexArray = thisSystem->indexArray;
@@ -131,13 +136,20 @@ int insertGlobalIndex(systemType *thisSystem, int tableID, int columnID, void *k
 	return insertIndex(indexArray[bufferID], indexArray[bufferID]->root, key, data);
 }
 
-int insertIndex(indexType *thisIndex, nodeType *thisNode, void *key, void *data){
+resultType *makeResult(char *filename, int position){
+	resultType *newResult = (resultType*)malloc(sizeof(resultType));
+	strcpy(newResult->filename, filename);
+	newResult->position = position;
+	return newResult;
+}
+
+int insertIndex(indexType *thisIndex, nodeType *thisNode, void *key, resultType *data){
 	int i, j, exception, ifInsert = 0;
 	void *thisKey, *thisSon;
 	nodeType *newNode, *thisParent, *tempSon;
 
 	if (thisNode->ifLeaf == 0){
-		for (i = 0; i < thisNode->ptrNum; i++){
+		for (i = 0; i < thisNode->ptrNum - 1; i++){
 			thisKey = (thisNode->key)[i];
 			if ((*(thisIndex->opFun))(thisKey, key)){
 				ifInsert = 1;
@@ -145,11 +157,12 @@ int insertIndex(indexType *thisIndex, nodeType *thisNode, void *key, void *data)
 			}
 		}
 
+		if (ifInsert) i++;
 		tempSon = (nodeType*)((thisNode->data)[i]);
 		exception = insertIndex(thisIndex, tempSon, key, data);
 		if (exception != 0) return exception;
 
-		if (ifInsert) thisNode->key[i] = (tempSon->key)[tempSon->ptrNum];
+		if (ifInsert) thisNode->key[i] = tempSon->key[tempSon->ptrNum];
 	}
 	else{	
 		/*
@@ -242,7 +255,7 @@ int deleteGlobalIndex(systemType *thisSystem, int tableID, int columnID, void *k
 int deleteIndex(indexType *thisIndex, nodeType *thisNode, void *key, resultType* data){
 	int i, j, exception, ifDelete = 0;
 	void *thisKey, *thisSon, *thisData;
-	nodeType *newNode, *thisParent;
+	nodeType *tempNode;
 
 	if (thisNode->ifLeaf == 0){
 		for (i = 0; i < thisNode->ptrNum; i++){
@@ -257,26 +270,34 @@ int deleteIndex(indexType *thisIndex, nodeType *thisNode, void *key, resultType*
 				}
 			}
 		}
-		if (!ifDelete){ 
-			thisSon = (thisNode->data)[i];
-			if (thisSon != NULL){
-				exception = deleteIndex(thisIndex, thisSon, key, data);
-				if (exception != 0) return exception;
-			}
-		}
+		if (ifDelete) i++;
+		thisSon = (nodeType*)((thisNode->data)[i]);
+		exception = deleteIndex(thisIndex, thisSon, key, data);
+		if (exception != 0) return exception;
 	}
 	else{
-		for (i = 0; i < thisNode->ptrNum; i++){
-			thisData = (thisNode->data)[i];
-			if (compareResultData(thisData, data) == 0){
-				ifDelete = 1;
-				break;
+		tempNode = thisNode;
+		while ((tempNode != NULL) && ((*(thisIndex->opFun))(tempNode->key[0], key) != 1)){
+			for (i = 0; i < tempNode->ptrNum; i++){
+				thisData = (tempNode->data)[i];
+				if (compareResultData(tempNode->data[i], data)){
+					ifDelete = 1;
+					break;
+				}
 			}
+			tempNode = tempNode->sibling;
 		}
 		if (!ifDelete) return Error_TupleIsnotExist;	
-	}
 
-	//merge node after deletion if possible 
+		for (j = i; j < tempNode->ptrNum - 1; j++){
+			tempNode->data[i] = tempNode->data[i + 1];
+			tempNode->key[i] = tempNode->key[i];
+		}
+		free(tempNode->data[j + 1]);
+		free(tempNode->key[j + 1]);
+		tempNode->data[j + 1] = NULL;
+		tempNode->key[j + 1] = NULL;
+	}
 }
 
 
