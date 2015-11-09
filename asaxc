@@ -1,0 +1,223 @@
+[33mcommit 987963c50196e5d71df122ae9b630fdeffc6c1f7[m
+Reflog: HEAD@{0} (Mike Chen <stupidchen@foxmail.com>)
+Reflog message: checkout: moving from v1.0 to debug
+Author: Mike Chen <stupidchen@foxmail.com>
+Date:   Tue Nov 10 02:06:11 2015 +0800
+
+    Added interface and fixed some bugs
+
+[33mcommit 987963c50196e5d71df122ae9b630fdeffc6c1f7[m
+Reflog: HEAD@{1} (Mike Chen <stupidchen@foxmail.com>)
+Reflog message: checkout: moving from master to v1.0
+Author: Mike Chen <stupidchen@foxmail.com>
+Date:   Tue Nov 10 02:06:11 2015 +0800
+
+    Added interface and fixed some bugs
+
+[33mcommit 987963c50196e5d71df122ae9b630fdeffc6c1f7[m
+Reflog: HEAD@{2} (Mike Chen <stupidchen@foxmail.com>)
+Reflog message: merge debug: Fast-forward
+Author: Mike Chen <stupidchen@foxmail.com>
+Date:   Tue Nov 10 02:06:11 2015 +0800
+
+    Added interface and fixed some bugs
+
+[33mcommit 1bf6cdf5af5ef6b14e5c012a5227be1a92be68c0[m
+Reflog: HEAD@{3} (Mike Chen <stupidchen@foxmail.com>)
+Reflog message: checkout: moving from 1 to master
+Author: Mike Chen <stupidchen@foxmail.com>
+Date:   Sun Nov 8 19:08:22 2015 +0800
+
+    Finished insertion and its debug
+
+[33mcommit 27c454376ec58ab5e49c946a89c917d47f545ac1[m
+Reflog: HEAD@{4} (Mike Chen <stupidchen@foxmail.com>)
+Reflog message: commit: fixed bugs
+Author: Mike Chen <stupidchen@foxmail.com>
+Date:   Tue Nov 10 05:38:19 2015 +0800
+
+    fixed bugs
+
+[33mcommit 987963c50196e5d71df122ae9b630fdeffc6c1f7[m
+Reflog: HEAD@{5} (Mike Chen <stupidchen@foxmail.com>)
+Reflog message: checkout: moving from master to 1
+Author: Mike Chen <stupidchen@foxmail.com>
+Date:   Tue Nov 10 02:06:11 2015 +0800
+
+    Added interface and fixed some bugs
+
+[33mcommit 1bf6cdf5af5ef6b14e5c012a5227be1a92be68c0[m
+Reflog: HEAD@{6} (Mike Chen <stupidchen@foxmail.com>)
+Reflog message: checkout: moving from 1 to master
+Author: Mike Chen <stupidchen@foxmail.com>
+Date:   Sun Nov 8 19:08:22 2015 +0800
+
+    Finished insertion and its debug
+
+[33mcommit 987963c50196e5d71df122ae9b630fdeffc6c1f7[m
+Reflog: HEAD@{7} (Mike Chen <stupidchen@foxmail.com>)
+Reflog message: commit: Added interface and fixed some bugs
+Author: Mike Chen <stupidchen@foxmail.com>
+Date:   Tue Nov 10 02:06:11 2015 +0800
+
+    Added interface and fixed some bugs
+
+[33mcommit 0768d696ef787477d059ff0274b5b1ac4db512d0[m
+Reflog: HEAD@{8} (Mike Chen <stupidchen@foxmail.com>)
+Reflog message: commit: Finished all operation and pass compilation
+Author: Mike Chen <stupidchen@foxmail.com>
+Date:   Tue Nov 10 00:53:33 2015 +0800
+
+    Finished all operation and pass compilation
+
+[33mcommit f95f15aef7a08bd156180be0a4ad27b26e70edcc[m
+Reflog: HEAD@{9} (Mike Chen <stupidchen@foxmail.com>)
+Reflog message: checkout: moving from 1 to 1
+Author: Mike Chen <stupidchen@foxmail.com>
+Date:   Mon Nov 9 18:22:09 2015 +0800
+
+    Fixed some errors
+
+[33mcommit f95f15aef7a08bd156180be0a4ad27b26e70edcc[m
+Reflog: HEAD@{10} (Mike Chen <stupidchen@foxmail.com>)
+Reflog message: commit: Fixed some errors
+Author: Mike Chen <stupidchen@foxmail.com>
+Date:   Mon Nov 9 18:22:09 2015 +0800
+
+    Fixed some errors
+
+[33mcommit 5a9bb3658a9fd6e84415a8ac91eb494e4b9a2a6d[m
+Reflog: HEAD@{11} (Mike Chen <stupidchen@foxmail.com>)
+Reflog message: commit: finish IO
+Author: Mike Chen <stupidchen@foxmail.com>
+Date:   Mon Nov 9 18:13:05 2015 +0800
+
+    finish IO
+
+[33mcommit 1bf6cdf5af5ef6b14e5c012a5227be1a92be68c0[m
+Reflog: HEAD@{12} (Mike Chen <stupidchen@foxmail.com>)
+Reflog message: checkout: moving from testing to 1
+Author: Mike Chen <stupidchen@foxmail.com>
+Date:   Sun Nov 8 19:08:22 2015 +0800
+
+    Finished insertion and its debug
+
+[33mcommit 1bf6cdf5af5ef6b14e5c012a5227be1a92be68c0[m
+Reflog: HEAD@{13} (Mike Chen <stupidchen@foxmail.com>)
+Reflog message: checkout: moving from master to testing
+Author: Mike Chen <stupidchen@foxmail.com>
+Date:   Sun Nov 8 19:08:22 2015 +0800
+
+    Finished insertion and its debug
+
+[33mcommit 1bf6cdf5af5ef6b14e5c012a5227be1a92be68c0[m
+Reflog: HEAD@{14} (Mike Chen <stupidchen@foxmail.com>)
+Reflog message: merge testing: Fast-forward
+Author: Mike Chen <stupidchen@foxmail.com>
+Date:   Sun Nov 8 19:08:22 2015 +0800
+
+    Finished insertion and its debug
+
+[33mcommit eb4c83402f3a568aa8b33adabb460285fcb6b553[m
+Reflog: HEAD@{15} (Mike Chen <stupidchen@foxmail.com>)
+Reflog message: checkout: moving from testing to master
+Author: Mike Chen <stupidchen@foxmail.com>
+Date:   Tue Nov 3 13:48:58 2015 +0800
+
+    Delete global variable
+
+[33mcommit 1bf6cdf5af5ef6b14e5c012a5227be1a92be68c0[m
+Reflog: HEAD@{16} (Mike Chen <stupidchen@foxmail.com>)
+Reflog message: commit: Finished insertion and its debug
+Author: Mike Chen <stupidchen@foxmail.com>
+Date:   Sun Nov 8 19:08:22 2015 +0800
+
+    Finished insertion and its debug
+
+[33mcommit bf697cfc140ffdae737dc555808fd6d6ca37aa15[m
+Reflog: HEAD@{17} (Mike Chen <stupidchen@foxmail.com>)
+Reflog message: commit: finished insertion
+Author: Mike Chen <stupidchen@foxmail.com>
+Date:   Sun Nov 8 00:29:11 2015 +0800
+
+    finished insertion
+
+[33mcommit 00396629f069ba26e20e513861919fed1bc93e86[m
+Reflog: HEAD@{18} (Mike Chen <stupidchen@foxmail.com>)
+Reflog message: commit: Fixed some grammar error and make it finish compilation...
+Author: Mike Chen <stupidchen@foxmail.com>
+Date:   Thu Nov 5 01:58:29 2015 +0800
+
+    Fixed some grammar error and make it finish compilation...
+
+[33mcommit be1f47eeb658d0d59f3dcee8329935387a9fdb9e[m
+Reflog: HEAD@{19} (Mike Chen <stupidchen@foxmail.com>)
+Reflog message: checkout: moving from master to testing
+Author: Mike Chen <stupidchen@foxmail.com>
+Date:   Thu Nov 5 01:42:27 2015 +0800
+
+    Add insertion and change something
+
+[33mcommit eb4c83402f3a568aa8b33adabb460285fcb6b553[m
+Reflog: HEAD@{20} (Mike Chen <stupidchen@foxmail.com>)
+Reflog message: checkout: moving from testing to master
+Author: Mike Chen <stupidchen@foxmail.com>
+Date:   Tue Nov 3 13:48:58 2015 +0800
+
+    Delete global variable
+
+[33mcommit be1f47eeb658d0d59f3dcee8329935387a9fdb9e[m
+Reflog: HEAD@{21} (Mike Chen <stupidchen@foxmail.com>)
+Reflog message: commit: Add insertion and change something
+Author: Mike Chen <stupidchen@foxmail.com>
+Date:   Thu Nov 5 01:42:27 2015 +0800
+
+    Add insertion and change something
+
+[33mcommit eb4c83402f3a568aa8b33adabb460285fcb6b553[m
+Reflog: HEAD@{22} (Mike Chen <stupidchen@foxmail.com>)
+Reflog message: checkout: moving from master to testing
+Author: Mike Chen <stupidchen@foxmail.com>
+Date:   Tue Nov 3 13:48:58 2015 +0800
+
+    Delete global variable
+
+[33mcommit eb4c83402f3a568aa8b33adabb460285fcb6b553[m
+Reflog: HEAD@{23} (Mike Chen <stupidchen@foxmail.com>)
+Reflog message: commit: Delete global variable
+Author: Mike Chen <stupidchen@foxmail.com>
+Date:   Tue Nov 3 13:48:58 2015 +0800
+
+    Delete global variable
+
+[33mcommit 6d697d7665e845d3ec0fd83558fdc6aaa923e618[m
+Reflog: HEAD@{24} (Mike Chen <stupidchen@foxmail.com>)
+Reflog message: commit: finish search of index
+Author: Mike Chen <stupidchen@foxmail.com>
+Date:   Tue Nov 3 01:40:39 2015 +0800
+
+    finish search of index
+
+[33mcommit d4973b23c60acf0386630c82a31998ccbb0e5a27[m
+Reflog: HEAD@{25} (Mike Chen <stupidchen@foxmail.com>)
+Reflog message: commit: add some stuff to the header file
+Author: Mike Chen <stupidchen@foxmail.com>
+Date:   Mon Nov 2 23:07:24 2015 +0800
+
+    add some stuff to the header file
+
+[33mcommit b3b00a76993f55b0d92b601778fa4726e6c19fc6[m
+Reflog: HEAD@{26} (Mike Chen <stupidchen@foxmail.com>)
+Reflog message: commit: first commit
+Author: Mike Chen <stupidchen@foxmail.com>
+Date:   Mon Nov 2 18:13:59 2015 +0800
+
+    first commit
+
+[33mcommit 11ea7e309b93b88c0edfcd1021bd93b09cd8c6d2[m
+Reflog: HEAD@{27} (Mike Chen <stupidchen@foxmail.com>)
+Reflog message: initial pull
+Author: stupidchen <stupidchen@foxmail.com>
+Date:   Mon Nov 2 17:50:08 2015 +0800
+
+    Initial commit
