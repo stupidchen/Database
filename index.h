@@ -59,33 +59,12 @@ typedef struct indexSystem{
 	int maxBufferedIndex;
 }systemType;
 
-char *getExceptionName(int code);
-
 //three compare operator of each types, if leftside's value bigger than rightside's, then return 1
-int opFunInt(void *x, void *y){
-	int left = *((int*)x);
-	int right = *((int*)y);
+int opFunInt(void *x, void *y);
 
-	if (left > right) return 1;
-	if (left < right) return -1;
-	return 0;
-}
+int opFunFloat(void *x, void *y);
 
-int opFunFloat(void *x, void *y){
-	float left = *((float*)x);
-	float right = *((float*)y);
-
-	if (left > right) return 1;
-	if (left < right) return -1;
-	return 0;
-}
-
-int opFunVarchar(void *x, void *y){
-	char *left = *((char**)x);
-	char *right = *((char**)y);
-
-	return strcmp(left, right);
-}
+int opFunVarchar(void *x, void *y);
 
 int makeIndexID(int tableID, int columnID);
 

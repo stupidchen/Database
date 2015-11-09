@@ -19,7 +19,6 @@ int initNode(nodeType *newNode){
 	newNode = (nodeType*)malloc(sizeof(nodeType));
 	newNode->parent = NULL;
 	newNode->sibling = NULL;
-	newNode->pSibling = NULL;
 	newNode->ptrNum = 0;
 }
 
@@ -55,12 +54,34 @@ int initIndex(indexType *thisIndex, int tableID, int columnID, int keyType){	 //
 	return 0;
 }
 
-char *getExceptionName(int code){
+int opFunInt(void *x, void *y){
+	int left = *((int*)x);
+	int right = *((int*)y);
+
+	if (left > right) return 1;
+	if (left < right) return -1;
+	return 0;
+}
+
+int opFunFloat(void *x, void *y){
+	float left = *((float*)x);
+	float right = *((float*)y);
+
+	if (left > right) return 1;
+	if (left < right) return -1;
+	return 0;
+}
+
+int opFunVarchar(void *x, void *y){
+	char *left = *((char**)x);
+	char *right = *((char**)y);
+
+	return strcmp(left, right);
 }
 
 resultType makeNar(int code){
 	resultType naR;
-	naR.filename = NULL;
+	naR.filename[0] = '\0';
 	naR.position = code;
 	return naR;
 }
@@ -159,7 +180,6 @@ int insertIndex(indexType *thisIndex, nodeType *thisNode, void *key, void *data)
 		initNode(newNode);
 		newNode->parent = thisNode->parent;	
 		newNode->sibling = thisNode->sibling;	
-		newNode->pSibling = thisNode;
 		newNode->ptrNum = (thisNode->ptrNum) / 2;
 		newNode->ifLeaf = thisNode->ifLeaf;
 		thisNode->sibling = newNode;

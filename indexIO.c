@@ -170,9 +170,9 @@ int saveBufferedIndexToDisk(indexType *thisIndex){
 	return noError;
 }
 
-int main(){
+/*int main(){
 	indexType *new;
 	int t = 20;
 	int b = 32;
 	saveBufferedIndexToDisk(new);
-}
+}*/
