@@ -26,8 +26,6 @@ void freeIndexNode(nodeType *thisNode, int keyType);
 
 void freeIndex(indexType *thisIndex);
 
-void freeSpecificIndex(systemType *thisSystem, int tableID, int columnID);
-
 void freeSystem(systemType *thisSystem);
 
 void deleteIndexFile(int tableID, int columnID);
