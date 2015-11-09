@@ -4,13 +4,14 @@
 #include<stdlib.h>
 
 #define defaultMaxBufferedIndex 100
-#define saveFileName indexSave
+#define dbFilenameLength 20
 
 #define Error_CannotGetIndexFromDisk -1
 #define Error_TupleIsnotExist -2
 #define Error_CannotAllocateEnoughSpace -3
 #define Error_InvalidKeyType -4
 #define Error_InvalidBufferedIndexCode -5
+#define Error_IndexFileCannotOpen -6
 #define noError 0
 
 /*
@@ -18,8 +19,8 @@
    filename are the name of the file which specific tuple was stored in, and position is the position where it stays.
  */
 typedef struct result{
-	char *filename;
 	int position;
+	char filename[dbFilenameLength];
 }resultType;
 /*
    struct node is the node of the B+tree index.
@@ -29,11 +30,11 @@ typedef struct result{
    int ptrNum is the number of the pointers of key/data. 
  */
 typedef struct node{ 
-	struct node *parent, *sibling, *pSibling;
-	int ifLeaf;
+	int ptrNum;
 	void **key;
 	void **data;
-	int ptrNum;
+	int ifLeaf;
+	struct node *parent, *sibling;
 }nodeType;
 
 /*
@@ -46,10 +47,10 @@ typedef struct node{
 
 typedef struct index{ 
 	int tableID, columnID, indexID;
-	nodeType *root, *firstLeaf;	
 	int level;
-	int (*opFun)(void *x, void *y);
 	int keyType;		
+	nodeType *root, *firstLeaf;	
+	int (*opFun)(void *x, void *y);
 }indexType;
 
 typedef struct indexSystem{
@@ -61,11 +62,30 @@ typedef struct indexSystem{
 char *getExceptionName(int code);
 
 //three compare operator of each types, if leftside's value bigger than rightside's, then return 1
-int opFunInt(void *x, void *y);
+int opFunInt(void *x, void *y){
+	int left = *((int*)x);
+	int right = *((int*)y);
 
-int opFunFloat(void *x, void *y);
+	if (left > right) return 1;
+	if (left < right) return -1;
+	return 0;
+}
 
-int opFunVarchar(void *x, void *y);
+int opFunFloat(void *x, void *y){
+	float left = *((float*)x);
+	float right = *((float*)y);
+
+	if (left > right) return 1;
+	if (left < right) return -1;
+	return 0;
+}
+
+int opFunVarchar(void *x, void *y){
+	char *left = *((char**)x);
+	char *right = *((char**)y);
+
+	return strcmp(left, right);
+}
 
 int makeIndexID(int tableID, int columnID);
 
@@ -104,15 +124,4 @@ int deleteGlobalIndex(systemType *thisSystem, int tableID, int columnID, void *k
 
 int deleteIndex(indexType *thisIndex, nodeType *thisNode, void *key, resultType *data);
 
-/*
-   IO operation.
-   getIndexFromMemory is the procedure that get the index from disk to the buffer.
-   saveBufferdIndexToDisk is the procedure that save the buffered index to the disk.
-   Still building...
-   */
-int replaceBufferedIndex(indexType **buffer, int tableID, int columnID, int indexID, int bufferID);
-
-indexType *getIndexFromDisk(int tableID, int columnID);
-
-int saveBufferedIndexToDisk(indexType *thisIndex, int tableID, int columnID);
 #endif

@@ -1,29 +1,6 @@
 #include "index.h"
+#include "indexIO.h"
 
-int opFunInt(void *x, void *y){
-	int left = *((int*)x);
-	int right = *((int*)y);
-
-	if (left > right) return 1;
-	if (left < right) return -1;
-	return 0;
-}
-
-int opFunFloat(void *x, void *y){
-	double left = *((double*)x);
-	double right = *((double*)y);
-
-	if (left > right) return 1;
-	if (left < right) return -1;
-	return 0;
-}
-
-int opFunVarchar(void *x, void *y){
-	char *left = *((char**)x);
-	char *right = *((char**)y);
-
-	return strcmp(left, right);
-}
 
 int initSystem(systemType *thisSystem, int maxBufferedIndex){
 	thisSystem->maxBufferedIndex = maxBufferedIndex;
@@ -283,28 +260,5 @@ int deleteIndex(indexType *thisIndex, nodeType *thisNode, void *key, resultType*
 }
 
 
-int replaceBufferedIndex(indexType **buffer, int tableID, int columnID, int indexID, int bufferID){
-	int result;
-	if (buffer[bufferID]->indexID == indexID) return noError;
-	if (buffer[bufferID] != NULL){
-		result = saveBufferedIndexToDisk(buffer[bufferID], tableID, columnID);
-		if (result != noError) return result;
-	}
-	buffer[bufferID] = getIndexFromDisk(tableID, columnID);
-	if (buffer[bufferID] == NULL) return Error_CannotGetIndexFromDisk;
-	return noError;
-}
-
-indexType *getIndexFromDisk(int tableID, int columnID){
-	return NULL;
-}
-
-int saveBufferedIndexToDisk(indexType *thisIndex, int tableID, int columnID){
-/*   
-     Building...
-     
- */
-	return 0;
-}
 int main(){
 }
