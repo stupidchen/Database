@@ -71,7 +71,7 @@ int opFunVarchar(void *x, void *y);
 
 int makeIndexID(int tableID, int columnID);
 
-int initNode(nodeType *newNode);
+nodeType *initNode(int ptrNum, int ifLeaf, nodeType *parent, nodeType *sibling);
 
 int initSystem(systemType *thisSystem, int maxBufferedIndex);
 
@@ -80,10 +80,10 @@ void dropIndex(systemType *thisSystem, int tableID, int columnID);
 /*Initialize the index and put it into the buffer
 return value:1 for exist; -1 for failure; 0 for success
 */
+
 int initGlobalIndex(systemType *thisSystem, int tableID, int columnID, int keyType);
 
 int initIndex(indexType *thisIndex, int tableID, int columnID, int keyType);	 
-
 /*
    Make a resultType which means the result doesn't exist.
    Nar = Not a result
@@ -102,13 +102,13 @@ resultType searchIndex(indexType *thisIndex, nodeType *thisNode, void *key);
  */
 resultType *makeResult(char *filename, int position);
 
-int insertGlobalIndex(systemType *thisSystem, int tableID, int columnID, void *key, resultType *data);
+int insertGlobalIndex(systemType *thisSystem, int tableID, int columnID, char *filename, int offset, int size);
 
 int insertIndex(indexType *thisIndex, nodeType *thisNode, void *key, resultType *data);
 
 int compareResultData(resultType *left, resultType *right);
 
-int deleteGlobalIndex(systemType *thisSystem, int tableID, int columnID, void *key, resultType *data);
+int deleteGlobalIndex(systemType *thisSystem, int tableID, int columnID, char *filename, int offset, int size);
 
 int deleteIndex(indexType *thisIndex, nodeType *thisNode, void *key, resultType *data);
 

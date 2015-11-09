@@ -1,0 +1,53 @@
+[33mcommit 1bf6cdf5af5ef6b14e5c012a5227be1a92be68c0[m
+Author: Mike Chen <stupidchen@foxmail.com>
+Date:   Sun Nov 8 19:08:22 2015 +0800
+
+    Finished insertion and its debug
+
+[33mcommit bf697cfc140ffdae737dc555808fd6d6ca37aa15[m
+Author: Mike Chen <stupidchen@foxmail.com>
+Date:   Sun Nov 8 00:29:11 2015 +0800
+
+    finished insertion
+
+[33mcommit 00396629f069ba26e20e513861919fed1bc93e86[m
+Author: Mike Chen <stupidchen@foxmail.com>
+Date:   Thu Nov 5 01:58:29 2015 +0800
+
+    Fixed some grammar error and make it finish compilation...
+
+[33mcommit be1f47eeb658d0d59f3dcee8329935387a9fdb9e[m
+Author: Mike Chen <stupidchen@foxmail.com>
+Date:   Thu Nov 5 01:42:27 2015 +0800
+
+    Add insertion and change something
+
+[33mcommit eb4c83402f3a568aa8b33adabb460285fcb6b553[m
+Author: Mike Chen <stupidchen@foxmail.com>
+Date:   Tue Nov 3 13:48:58 2015 +0800
+
+    Delete global variable
+
+[33mcommit 6d697d7665e845d3ec0fd83558fdc6aaa923e618[m
+Author: Mike Chen <stupidchen@foxmail.com>
+Date:   Tue Nov 3 01:40:39 2015 +0800
+
+    finish search of index
+
+[33mcommit d4973b23c60acf0386630c82a31998ccbb0e5a27[m
+Author: Mike Chen <stupidchen@foxmail.com>
+Date:   Mon Nov 2 23:07:24 2015 +0800
+
+    add some stuff to the header file
+
+[33mcommit b3b00a76993f55b0d92b601778fa4726e6c19fc6[m
+Author: Mike Chen <stupidchen@foxmail.com>
+Date:   Mon Nov 2 18:13:59 2015 +0800
+
+    first commit
+
+[33mcommit 11ea7e309b93b88c0edfcd1021bd93b09cd8c6d2[m
+Author: stupidchen <stupidchen@foxmail.com>
+Date:   Mon Nov 2 17:50:08 2015 +0800
+
+    Initial commit

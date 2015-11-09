@@ -11,7 +11,7 @@
 typedef struct indexForIO{ 
 	int tableID, columnID, indexID;
 	int level;
-	int keyType;
+	int keyType, keySize;
 }indexTypeForIO;
 
 /*

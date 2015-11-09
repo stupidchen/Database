@@ -15,11 +15,15 @@ int makeIndexID(int tableID, int columnID){
 	return indexID;
 }
 
-int initNode(nodeType *newNode){
-	newNode = (nodeType*)malloc(sizeof(nodeType));
-	newNode->parent = NULL;
-	newNode->sibling = NULL;
-	newNode->ptrNum = 0;
+nodeType *initNode(int ptrNum, int ifLeaf, nodeType *parent, nodeType *sibling){
+	nodeType *newNode = (nodeType*)malloc(sizeof(nodeType));
+	newNode->ifLeaf = ifLeaf;
+	newNode->ptrNum = ptrNum;
+	newNode->parent = parent;
+	newNode->sibling = sibling;
+	newNode->data = (void**)malloc(sizeof(void*) * ptrNum);
+	if (ifLeaf == 1) newNode->key = (void**)malloc(sizeof(void*) * ptrNum);
+	else newNode->key = (void**)malloc(sizeof(void*) * (ptrNum-1));
 }
 
 void dropIndex(systemType *thisSystem, int tableID, int columnID){
@@ -56,7 +60,7 @@ int initIndex(indexType *thisIndex, int tableID, int columnID, int keyType){
 	thisIndex->level = defaultIndexLevel;	
 
 	thisIndex->keyType = keyType;
-	if (keyType < 2) thisIndex->keySize = 1;
+	if (keyType < 2) thisIndex->keySize = 4;
 	else thisIndex->keySize = keyType/2;
 
 	switch (keyType){
@@ -141,12 +145,15 @@ resultType searchIndex(indexType *thisIndex, nodeType *thisNode, void *key){
 	return makeNar(Error_TupleIsnotExist);
 }
 
-int insertGlobalIndex(systemType *thisSystem, int tableID, int columnID, void *key, resultType *data){
+int insertGlobalIndex(systemType *thisSystem, int tableID, int columnID, char *filename, int offset, int size){
 	int indexID = makeIndexID(tableID, columnID);
 	int bufferID = indexID % (thisSystem->maxBufferedIndex);
 	indexType **indexArray = thisSystem->indexArray;
 	int result = replaceBufferedIndex(indexArray, tableID, columnID, indexID, bufferID);
 	if (result != noError) return result;
+	resultType *data = makeResult(filename, offset);
+	void *key;
+//	key = getIndexBlock(tableID, filename, offset, size);
 	return insertIndex(indexArray[bufferID], indexArray[bufferID]->root, key, data);
 }
 
@@ -159,24 +166,25 @@ resultType *makeResult(char *filename, int position){
 
 int insertIndex(indexType *thisIndex, nodeType *thisNode, void *key, resultType *data){
 	int i, j, exception, ifInsert = 0;
+	int keySize = thisIndex->keySize;
 	void *thisKey, *thisSon;
 	nodeType *newNode, *thisParent, *tempSon;
 
 	if (thisNode->ifLeaf == 0){
 		for (i = 0; i < thisNode->ptrNum - 1; i++){
 			thisKey = (thisNode->key)[i];
-			if ((*(thisIndex->opFun))(thisKey, key)){
+			if ((*(thisIndex->opFun))(thisKey, key) == 1){
 				ifInsert = 1;
 				break;
 			}
 		}
 
-		if (ifInsert) i++;
+		if (!ifInsert) i++;
 		tempSon = (nodeType*)((thisNode->data)[i]);
 		exception = insertIndex(thisIndex, tempSon, key, data);
 		if (exception != 0) return exception;
 
-		if (ifInsert) thisNode->key[i] = tempSon->key[tempSon->ptrNum];
+		if (ifInsert) memcpy(thisNode->key[i], tempSon->sibling->key[0], keySize);
 	}
 	else{	
 		/*
@@ -186,38 +194,38 @@ int insertIndex(indexType *thisIndex, nodeType *thisNode, void *key, resultType 
 		for (i = thisNode->ptrNum; i > 0; i--){
 			thisSon = (thisNode->data)[i];
 			thisKey = (thisNode->key)[i];
-			if ((*(thisIndex->opFun))(thisKey, key)) break;
+			if ((*(thisIndex->opFun))(thisKey, key) == 1) break;
 		}
-		thisNode->ptrNum++;
-		thisNode->key[thisNode->ptrNum] = (void*)malloc(sizeof(key));
+		thisNode->key[thisNode->ptrNum] = (void*)malloc(keySize);
 		thisNode->data[thisNode->ptrNum] = (void*)malloc(sizeof(data));
-		for (j = thisNode->ptrNum; j > i + 1; j--){
+		for (j = thisNode->ptrNum; j >= i + 1; j--){
 			thisNode->key[j] = thisNode->key[j - 1];
 			thisNode->data[j] = thisNode->data[j - 1];
 		}
-		thisNode->key[j] = key;
-		thisNode->data[j] = data;
+		memcpy(thisNode->key[i], key, keySize);
+		thisNode->data[i] = data;
+		thisNode->ptrNum++;
 	}
 
 	/*
 	   Adjustment after insertion to a internal node
 	 */
-	if (thisNode->ptrNum == thisIndex->level - 1){
+	if (thisNode->ptrNum == thisIndex->level){
 		//initiate a new node and re-assign the data and key
-		initNode(newNode);
-		newNode->parent = thisNode->parent;	
-		newNode->sibling = thisNode->sibling;	
-		newNode->ptrNum = (thisNode->ptrNum) / 2;
-		newNode->ifLeaf = thisNode->ifLeaf;
+		newNode = initNode((thisNode->ptrNum) >> 1, thisNode->ifLeaf, thisNode->parent, thisNode->sibling);
 		thisNode->sibling = newNode;
 		thisNode->ptrNum = (thisNode->ptrNum) - (newNode->ptrNum);
-		for (i = 0; i < newNode->ptrNum; i++){
-			newNode->key[i] = (void*)malloc(sizeof(key));
-			newNode->key[i] = thisNode->key[i + thisNode->ptrNum];
-			newNode->data[i] = (void*)malloc(sizeof(thisNode->data[i]));
+
+		for (i = 0; i < newNode->ptrNum; i++) 
 			newNode->data[i] = thisNode->data[i + thisNode->ptrNum];
-			thisNode->key[i + thisNode->ptrNum] = NULL;
-			thisNode->data[i + thisNode->ptrNum] = NULL;
+		if (thisNode->ifLeaf == 1){
+			for (i = 0; i < newNode->ptrNum; i++) 
+				newNode->key[i] = thisNode->key[i + thisNode->ptrNum];
+		}
+		else{
+			for (i = 0; i < newNode->ptrNum - 1; i++)
+				newNode->key[i] = thisNode->key[i + thisNode->ptrNum];
+			free(thisNode->key[thisNode->ptrNum]);
 		}
 
 		//update the parent
@@ -225,27 +233,22 @@ int insertIndex(indexType *thisIndex, nodeType *thisNode, void *key, resultType 
 			thisParent = thisNode -> parent;
 			for (i = 0; i < thisParent->ptrNum; i++)
 				if ((nodeType*)thisParent->data[i] == thisNode) break;
-			thisParent->ptrNum++;
-			thisParent->key[thisParent->ptrNum] = (void*)malloc(sizeof(key));
-			thisParent->data[thisParent->ptrNum] = (void*)malloc(sizeof(nodeType*));
-			for (j = thisParent->ptrNum; j > i+1; j--){
-				thisParent->key[j] = thisParent->key[j - 1];
+			thisParent->key[thisParent->ptrNum - 1] = (void*)malloc(keySize);
+			thisParent->data[thisParent->ptrNum] = (void*)malloc(sizeof(void*));
+			for (j = thisParent->ptrNum; j > i + 1; j--){
+				if (j > i + 2) thisParent->key[j - 1] = thisParent->key[j - 2];
 				thisParent->data[j] = thisParent->data[j - 1];
 			}
-			thisParent->key[i + 1] = newNode->key[newNode->ptrNum];
+			memcpy(thisParent->key[i], newNode->key[0], keySize);
 			thisParent->data[i + 1] = (void*)newNode;
+			thisParent->ptrNum++;
 		}
 		else{ //if the parent is root
-			initNode(thisParent);
+			thisParent = initNode(2, 0, NULL, NULL);
 			thisIndex->root = thisParent;
-			thisParent->ptrNum = 1;
-			thisParent->ifLeaf = 0;
-			thisParent->key[0] = (void*)malloc(sizeof(key));
-			thisParent->key[0] = thisNode->key[thisNode->ptrNum];
 
-			thisParent->data[0] = (void*)malloc(sizeof(thisNode));
+			memcpy(thisParent->key[0], thisNode->sibling->key[0], keySize);
 			thisParent->data[0] = (void*)thisNode;
-			thisParent->data[1] = (void*)malloc(sizeof(newNode));
 			thisParent->data[1] = (void*)newNode;
 		}
 	}
@@ -257,25 +260,29 @@ int compareResultData(resultType *left, resultType *right){
 	return 1;
 }
 
-int deleteGlobalIndex(systemType *thisSystem, int tableID, int columnID, void *key, resultType* data){
+int deleteGlobalIndex(systemType *thisSystem, int tableID, int columnID, char *filename, int offset, int size){
 	int indexID = makeIndexID(tableID, columnID);
 	int bufferID = indexID % (thisSystem->maxBufferedIndex);
 	indexType **indexArray = thisSystem->indexArray;
 	int result = replaceBufferedIndex(indexArray, tableID, columnID, indexID, bufferID);
 	if (result != noError) return result;
+	resultType *data = makeResult(filename, offset);
+	void *key;
+//	key = getIndexBlock(tableID, filename, offset, size);
 	return deleteIndex(indexArray[bufferID], indexArray[bufferID]->root, key, data);
 }
 
 int deleteIndex(indexType *thisIndex, nodeType *thisNode, void *key, resultType* data){
 	int i, j, exception, ifDelete = 0;
-	void *thisKey, *thisSon, *thisData;
-	nodeType *tempNode;
+	int keySize = thisIndex->keySize;
+	void *thisKey, *thisData;
+	nodeType *tempNode, *thisSon;
 
 	if (thisNode->ifLeaf == 0){
 		for (i = 0; i < thisNode->ptrNum; i++){
 			thisSon = (thisNode->data)[i];
 			thisKey = (thisNode->key)[i];
-			if ((*(thisIndex->opFun))(thisKey, key)){
+			if ((*(thisIndex->opFun))(thisKey, key) == 1){
 				exception = deleteIndex(thisIndex, thisSon, key, data);
 				if (exception != 0) return exception;
 				else{
@@ -284,17 +291,28 @@ int deleteIndex(indexType *thisIndex, nodeType *thisNode, void *key, resultType*
 				}
 			}
 		}
-		if (ifDelete) i++;
-		thisSon = (nodeType*)((thisNode->data)[i]);
+		if (!ifDelete) i++;
+		thisSon = (nodeType*)(thisNode->data)[i];
 		exception = deleteIndex(thisIndex, thisSon, key, data);
 		if (exception != 0) return exception;
+		if (thisSon->ptrNum == 0){
+			freeNode(thisSon, thisIndex->keyType);
+			for (j = i; j < thisNode->ptrNum - 1; j++){
+				thisNode->data[j] = thisNode->data[j + 1];
+				if (j < thisNode->ptrNum - 2) thisNode->key[j - 1] = thisNode->key[j];
+			}
+			thisNode->ptrNum--;
+		}
+		else{
+			if (!ifDelete) memcpy(thisNode->key[i-1], thisSon->key[0], keySize);
+		}
 	}
 	else{
 		tempNode = thisNode;
 		while ((tempNode != NULL) && ((*(thisIndex->opFun))(tempNode->key[0], key) != 1)){
 			for (i = 0; i < tempNode->ptrNum; i++){
 				thisData = (tempNode->data)[i];
-				if (compareResultData(tempNode->data[i], data)){
+				if (compareResultData(tempNode->data[i], data) == 0){
 					ifDelete = 1;
 					break;
 				}
@@ -303,17 +321,13 @@ int deleteIndex(indexType *thisIndex, nodeType *thisNode, void *key, resultType*
 		}
 		if (!ifDelete) return Error_TupleIsnotExist;	
 
+		free(tempNode->data[i]);
+		free(tempNode->key[i]);
 		for (j = i; j < tempNode->ptrNum - 1; j++){
-			tempNode->data[i] = tempNode->data[i + 1];
-			tempNode->key[i] = tempNode->key[i];
+			tempNode->data[j] = tempNode->data[j + 1];
+			tempNode->key[j] = tempNode->key[j + 1];
 		}
-		free(tempNode->data[j + 1]);
-		free(tempNode->key[j + 1]);
-		tempNode->data[j + 1] = NULL;
-		tempNode->key[j + 1] = NULL;
+		tempNode->ptrNum--;
 	}
 }
 
-
-int main(){
-}

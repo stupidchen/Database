@@ -20,6 +20,7 @@ void freeNode(nodeType *thisNode, int keyType){
 	free(thisNode);
 }
 void freeIndexNode(nodeType *thisNode, int keyType){
+	if (thisNode == NULL) return;
 	if (thisNode->ifLeaf == 0){
 		int i;
 		for (i = 0; i <= thisNode->ptrNum; i++) 
@@ -58,34 +59,42 @@ int replaceBufferedIndex(indexType **buffer, int tableID, int columnID, int inde
 }
 
 void reconstructIndex(indexType *thisIndex, nodeType *thisNode, int layerNum){
+	if (layerNum == 0){
+		thisIndex->root = NULL;
+		return;
+	}
 	if (layerNum == 1){
 		thisIndex->root = thisNode;
 		return;
 	}
 
+	int keySize = thisIndex->keySize;
 	int level = thisIndex->level;
 	int nextLayerNum = layerNum / level;
 	if (layerNum % level != 0) nextLayerNum++;
 
 	nodeType *firstNode = NULL;
 	nodeType *thisParent, *lastParent = NULL;
-	int i, j = 0, unMatch = layerNum;
+	int i, j = 0, unMatch = layerNum, ptrNum;
 	for (i = 0; i < nextLayerNum; i++){
-		thisParent = (nodeType*)malloc(sizeof(nodeType));
+		if (unMatch >= (level << 1)) ptrNum = level;
+		else{
+			if (unMatch > level) ptrNum = unMatch >> 1;
+		}
+		unMatch = unMatch - ptrNum;
+
+		thisParent = initNode(ptrNum, 0, NULL, lastParent);
 		if (firstNode == NULL) firstNode = thisParent;
-		thisParent->ifLeaf = 0;
-		thisParent->sibling = lastParent;
 		lastParent = thisParent;
-		if (unMatch >= (level << 1)) thisParent->ptrNum = level;
-		else if (unMatch > level) thisParent->ptrNum = unMatch/2;
-		unMatch = unMatch - thisParent->ptrNum;
+
 		for (j = 0; j < thisParent->ptrNum; j++){
 			thisParent->data[j] = (void*)malloc(sizeof(nodeType*));
 			thisParent->data[j] = thisNode;
 			if (j < thisParent->ptrNum - 1){
-				thisParent->key[j] = (void*)malloc(sizeof(thisNode->key[thisNode->ptrNum]));
-				thisParent->key[j] = thisNode->key[thisNode->ptrNum];
+				thisParent->key[j] = (void*)malloc(keySize);
+				memcpy(thisParent->key[j], thisNode->sibling->key[0], keySize);
 			}
+			thisNode->parent = thisParent;
 			thisNode = thisNode->sibling;
 		}
 	}
@@ -98,7 +107,7 @@ indexType *getIndexFromDisk(int tableID, int columnID){
 
 	char filename[maxFilenameLength];
 	sprintf(filename, "%s%d%d", indexFilename, tableID, columnID);
-	FILE *readFile = fopen(filename, "wb");
+	FILE *readFile = fopen(filename, "rb");
 	if (readFile == NULL) return NULL;
 	
 	fread(newIndexForIO, sizeof(indexTypeForIO), 1, readFile);
@@ -151,7 +160,7 @@ int saveBufferedIndexToDisk(indexType *thisIndex){
 	if (saveFile == NULL) return Error_IndexFileCannotOpen;
 
 	indexTypeForIO *indexForIO = (indexTypeForIO*)thisIndex;
-	fwrite(indexForIO, sizeof(indexTypeForIO*), 1, saveFile);
+	fwrite(indexForIO, sizeof(indexTypeForIO), 1, saveFile);
 
 	int i;
 	int keySize = thisIndex->keySize;
@@ -166,15 +175,28 @@ int saveBufferedIndexToDisk(indexType *thisIndex){
 		thisLeaf = thisLeaf->sibling;
 	}
 	fclose(saveFile);
-	
-	freeIndex(thisIndex);
 
+	freeIndex(thisIndex);
 	return noError;
 }
 
-/*int main(){
+int main(){
 	indexType *new;
-	int t = 20;
-	int b = 32;
+	new = (indexType*)malloc(sizeof(indexType));
+	new->tableID = 0;
+	new->columnID = 2;
+	new->indexID = 2;
+	new->level = 3;
+	new->keyType = 0;
+	new->keySize = 4;
+	new->root = NULL;
+	new->firstLeaf = NULL;
+	nodeType *rootNode = (nodeType*)malloc(sizeof(nodeType));
+	rootNode->ptrNum = 2;
+
 	saveBufferedIndexToDisk(new);
-}*/
+
+	indexType *new1 = getIndexFromDisk(0, 2);
+	new1->tableID++;
+	saveBufferedIndexToDisk(new1);
+}
