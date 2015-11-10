@@ -56,7 +56,7 @@ int initIndex(indexType *thisIndex, int tableID, int columnID, int keyType){
 	thisIndex->indexID = makeIndexID(tableID, columnID);
 
 	thisIndex->firstLeaf = NULL;
-	thisIndex->root = NULL;
+	thisIndex->root = initNode(0, 1, NULL, NULL);
 	thisIndex->level = defaultIndexLevel;	
 
 	thisIndex->keyType = keyType;
@@ -66,8 +66,7 @@ int initIndex(indexType *thisIndex, int tableID, int columnID, int keyType){
 	switch (keyType){
 		case 0:thisIndex->opFun = &opFunInt;break;
 		case 1:thisIndex->opFun = &opFunFloat;break;
-		case 2:thisIndex->opFun = &opFunVarchar;break;
-		default:return Error_InvalidKeyType;
+		default:thisIndex->opFun = &opFunVarchar;break;
 	}
 
 	return noError;
@@ -129,7 +128,7 @@ resultType searchIndex(indexType *thisIndex, nodeType *thisNode, void *key){
 				break;
 			}
 		}
-		if (ifFound) i++;
+		if (!ifFound) i++;
 		thisSon = (thisNode->data)[i];
 		return searchIndex(thisIndex, (nodeType*)thisSon, key);
 	}
@@ -179,7 +178,7 @@ int insertIndex(indexType *thisIndex, nodeType *thisNode, void *key, resultType 
 			}
 		}
 
-		if (!ifInsert) i++;
+
 		tempSon = (nodeType*)((thisNode->data)[i]);
 		exception = insertIndex(thisIndex, tempSon, key, data);
 		if (exception != 0) return exception;
@@ -210,7 +209,7 @@ int insertIndex(indexType *thisIndex, nodeType *thisNode, void *key, resultType 
 	/*
 	   Adjustment after insertion to a internal node
 	 */
-	if (thisNode->ptrNum == thisIndex->level){
+	if (thisNode->ptrNum > thisIndex->level){
 		//initiate a new node and re-assign the data and key
 		newNode = initNode((thisNode->ptrNum) >> 1, thisNode->ifLeaf, thisNode->parent, thisNode->sibling);
 		thisNode->sibling = newNode;
@@ -225,7 +224,7 @@ int insertIndex(indexType *thisIndex, nodeType *thisNode, void *key, resultType 
 		else{
 			for (i = 0; i < newNode->ptrNum - 1; i++)
 				newNode->key[i] = thisNode->key[i + thisNode->ptrNum];
-			free(thisNode->key[thisNode->ptrNum]);
+			free(thisNode->key[thisNode->ptrNum - 1]);
 		}
 
 		//update the parent
@@ -279,29 +278,26 @@ int deleteIndex(indexType *thisIndex, nodeType *thisNode, void *key, resultType*
 	nodeType *tempNode, *thisSon;
 
 	if (thisNode->ifLeaf == 0){
-		for (i = 0; i < thisNode->ptrNum; i++){
-			thisSon = (thisNode->data)[i];
+		for (i = 0; i < thisNode->ptrNum - 1; i++){
 			thisKey = (thisNode->key)[i];
 			if ((*(thisIndex->opFun))(thisKey, key) == 1){
-				exception = deleteIndex(thisIndex, thisSon, key, data);
-				if (exception != 0) return exception;
-				else{
-					ifDelete = 1;
-					break;
-				}
+				ifDelete = 1;
+				break;
 			}
 		}
-		if (!ifDelete) i++;
 		thisSon = (nodeType*)(thisNode->data)[i];
 		exception = deleteIndex(thisIndex, thisSon, key, data);
 		if (exception != 0) return exception;
+
 		if (thisSon->ptrNum == 0){
 			freeNode(thisSon, thisIndex->keyType);
-			for (j = i; j < thisNode->ptrNum - 1; j++){
-				thisNode->data[j] = thisNode->data[j + 1];
-				if (j < thisNode->ptrNum - 2) thisNode->key[j - 1] = thisNode->key[j];
+			if (ifDelete){
+				for (j = i; j < thisNode->ptrNum - 1; j++){
+					thisNode->data[j] = thisNode->data[j + 1];
+					if (j < thisNode->ptrNum - 2) thisNode->key[j - 1] = thisNode->key[j];
+				}
+				thisNode->ptrNum--;
 			}
-			thisNode->ptrNum--;
 		}
 		else{
 			if (!ifDelete) memcpy(thisNode->key[i-1], thisSon->key[0], keySize);

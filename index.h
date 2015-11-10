@@ -25,6 +25,7 @@ typedef struct result{
 	int position;
 	char filename[dbFilenameLength];
 }resultType;
+
 /*
    struct node is the node of the B+tree index.
    int ifLeaf is a sign that distinguish a node whether it is leaf:0 -> internal node; 1 -> leaf node.
@@ -47,7 +48,6 @@ typedef struct node{
    Pointer number limit: level
    But the last pointer points to its sibling.
  */
-
 typedef struct index{ 
 	int tableID, columnID, indexID;
 	int level;
@@ -77,8 +77,8 @@ int initSystem(systemType *thisSystem, int maxBufferedIndex);
 
 void dropIndex(systemType *thisSystem, int tableID, int columnID);
 
-/*Initialize the index and put it into the buffer
-return value:1 for exist; -1 for failure; 0 for success
+/*
+   Initialize the index and put it into the buffer
 */
 
 int initGlobalIndex(systemType *thisSystem, int tableID, int columnID, int keyType);
@@ -95,11 +95,6 @@ resultType searchGlobalIndex(systemType *thisSystem, int tableID, int columnID, 
 
 resultType searchIndex(indexType *thisIndex, nodeType *thisNode, void *key);
 
-/*
-   Major operation of the index B+tree:insert and delete
-   Insertion finished.
-   But deletion is still building. Too complexible...
- */
 resultType *makeResult(char *filename, int position);
 
 int insertGlobalIndex(systemType *thisSystem, int tableID, int columnID, char *filename, int offset, int size);

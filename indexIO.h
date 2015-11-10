@@ -18,8 +18,8 @@ typedef struct indexForIO{
    IO operation.
    getIndexFromMemory is the procedure that get the index from disk to the buffer.
    saveBufferdIndexToDisk is the procedure that save the buffered index to the disk.
-   Still building...
    */
+
 void freeNode(nodeType *thisNode, int keyType);
 
 void freeIndexNode(nodeType *thisNode, int keyType);
